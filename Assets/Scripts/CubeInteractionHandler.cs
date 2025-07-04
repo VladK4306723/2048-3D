@@ -1,12 +1,11 @@
 using UnityEngine;
-// 1. Підключаємо простір імен нової Input System
 using UnityEngine.InputSystem;
 
 public class CubeInteractionHandler : MonoBehaviour
 {
     [Header("Movement Boundaries")]
-    public float minX = -1f;
-    public float maxX = 1f;
+    public float minX;
+    public float maxX;
 
     private Rigidbody _rigidbody;
     private Camera _mainCamera;
@@ -19,14 +18,6 @@ public class CubeInteractionHandler : MonoBehaviour
         Debug.Log("CubeInteractionHandler: Initialize called");
         _mainCamera = Camera.main;
         _levelManager = levelManager;
-        if (_mainCamera == null)
-        {
-            Debug.LogError("CubeInteractionHandler: Main camera not found");
-        }
-        if (_levelManager == null)
-        {
-            Debug.LogError("CubeInteractionHandler: LevelManager not set");
-        }
     }
 
     public void SetCube(CubeController currentCube)
@@ -107,7 +98,7 @@ public class CubeInteractionHandler : MonoBehaviour
             if (_rigidbody != null)
             {
                 _rigidbody.isKinematic = false;
-                _rigidbody.AddForce(Vector3.forward * 15f, ForceMode.Impulse);
+                _rigidbody.AddForce(Vector3.forward * 30f, ForceMode.Impulse);
                 Debug.Log("CubeInteractionHandler: Force applied to cube");
             }
 

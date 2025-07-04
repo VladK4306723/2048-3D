@@ -6,6 +6,7 @@ public class LevelController : MonoBehaviour
 {
     [SerializeField] private Transform SpawnPoint;
     [SerializeField] private CubeInteractionHandler CubeInteractionHandler;
+    [SerializeField] private int IntForWin;
 
     private ILevelManager _levelManager;
     private ICubeFactory _cubeFactory;
@@ -23,7 +24,7 @@ public class LevelController : MonoBehaviour
 
     private void Start()
     {
-        _levelManager.Init(SpawnPoint, _cubePool, _cubeFactory, CubeInteractionHandler);
+        _levelManager.Init(SpawnPoint, _cubePool, _cubeFactory, CubeInteractionHandler, IntForWin);
         _levelManager.Launch();
     }
 
