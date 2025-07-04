@@ -4,9 +4,9 @@ using Zenject;
 
 public interface ICubePool
 {
-    void Init(int poolSize);
-    CubeView GetCubeView();
-    void ReturnCubeView(CubeView view);
+    void Init(int poolSize, Transform parent);
+    CubeView Pull();
+    void Push(CubeView view);
 }
 
 public class CubePool : ICubePool
@@ -22,17 +22,17 @@ public class CubePool : ICubePool
         _cubePrefab = cubePrefab;
     }
 
-    public void Init(int poolSize)
+    public void Init(int poolSize, Transform parent)
     {
         for (int i = 0; i < poolSize; i++)
         {
-            CreateNewCubeView();
+            Create(parent);
         }
     }
 
-    private CubeView CreateNewCubeView()
+    private CubeView Create(Transform parent)
     {
-        GameObject cubeGO = _container.InstantiatePrefab(_cubePrefab);
+        GameObject cubeGO = _container.InstantiatePrefab(_cubePrefab, parent);
         CubeView view = cubeGO.GetComponent<CubeView>();
         if (view == null)
         {
@@ -45,18 +45,14 @@ public class CubePool : ICubePool
         return view;
     }
 
-    public CubeView GetCubeView()
+    public CubeView Pull()
     {
-        if (_pool.Count == 0)
-        {
-            CreateNewCubeView();
-        }
         CubeView view = _pool.Dequeue();
         view.SetActive(true);
         return view;
     }
 
-    public void ReturnCubeView(CubeView view)
+    public void Push(CubeView view)
     {
         view.SetActive(false);
         _pool.Enqueue(view);

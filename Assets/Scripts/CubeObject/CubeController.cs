@@ -3,12 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IInteractible
-{
-    void OnInteract(CubeController otherCube);
-}
-
-public class CubeController : MonoBehaviour, IInteractible
+public class CubeController : MonoBehaviour
 {
     private CubeModel _model;
     private CubeView _view;
@@ -47,7 +42,15 @@ public class CubeController : MonoBehaviour, IInteractible
     public void UpdateView()
     {
         _view.SetText(_model.Po2Value.ToString());
+        SetColorBasedOnValue();
         OnIntChanged?.Invoke(_model.Po2Value);
+    }
+
+    private void SetColorBasedOnValue()
+    {
+        float hue = (float)Mathf.Log(_model.Po2Value, 2) / 10f;
+        Color color = Color.HSVToRGB(hue, 1f, 1f);
+        _view.SetColor(color);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -90,6 +93,7 @@ public class CubeController : MonoBehaviour, IInteractible
         if (other == null || _interactedCubes.Contains(other)) yield break;
         if (_model.Po2Value != other._model.Po2Value || other.IsForLaunch) yield break;
 
+        _view.PlayHit();
         _model.Po2Value *= 2;
         UpdateView();
         _interactedCubes.Add(other);
@@ -112,17 +116,6 @@ public class CubeController : MonoBehaviour, IInteractible
         }
     }
 
-    public void OnInteract(CubeController otherCube)
-    {
-        if (otherCube != null && !_interactedCubes.Contains(otherCube) && _model.Po2Value == otherCube._model.Po2Value)
-        {
-            _model.Po2Value *= 2;
-            UpdateView();
-            otherCube.ReturnToPool();
-            _interactedCubes.Add(otherCube);
-        }
-    }
-
     public void ReturnToPool()
     {
         OnCubeDestroyed?.Invoke(this);
@@ -133,6 +126,6 @@ public class CubeController : MonoBehaviour, IInteractible
     {
         yield return new WaitForEndOfFrame();
         Clear();
-        _cubePool.ReturnCubeView(_view);
+        _cubePool.Push(_view);
     }
 }

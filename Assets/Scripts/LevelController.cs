@@ -7,8 +7,10 @@ public class LevelController : MonoBehaviour
 {
     [SerializeField] private UIManager UIManager;
     [SerializeField] private Transform SpawnPoint;
+    [SerializeField] private AudioSource WinSound;
     [SerializeField] private CubeInteractionHandler CubeInteractionHandler;
     [SerializeField] private int IntForWin;
+    [SerializeField] private int PoolSize;
 
     private ILevelManager _levelManager;
     private ICubeFactory _cubeFactory;
@@ -21,6 +23,8 @@ public class LevelController : MonoBehaviour
         _levelManager = levelManager;
         _cubePool = cubePool;
         _cubeFactory = cubeFactory;
+
+        _cubePool.Init(PoolSize, gameObject.transform);
     }
 
 
@@ -45,6 +49,7 @@ public class LevelController : MonoBehaviour
 
     private void OpenWinScreen(int score)
     {
+        WinSound.Play();
         UIManager.OpenWinScreen(score);
     }
 }

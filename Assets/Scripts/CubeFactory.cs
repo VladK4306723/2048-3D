@@ -17,7 +17,7 @@ public class CubeFactory : ICubeFactory
 
     public CubeController Create(Transform spawnPoint)
     {
-        CubeView view = _cubePool.GetCubeView();
+        CubeView view = _cubePool.Pull();
         int po2Value = Random.value < 0.75f ? 2 : 4;
 
         CubeModel model = new CubeModel(po2Value);

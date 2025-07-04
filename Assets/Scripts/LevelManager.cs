@@ -17,7 +17,6 @@ public interface ILevelManager
 
 public class LevelManager : ILevelManager
 {
-    private const int c_poolSize = 6;
     private const float c_stopVelocityThreshold = 0.05f;
     private const float c_stopDelay = 0.25f;
     private int _intForWin;
@@ -43,7 +42,6 @@ public class LevelManager : ILevelManager
         _cubeInteractionHandler = cubeInteractionHandler;
         _intForWin = intForWin; 
 
-        _cubePool.Init(c_poolSize);
         _cubeFactory.Init(_cubePool);
         _cubeInteractionHandler.Initialize(this);
     }
