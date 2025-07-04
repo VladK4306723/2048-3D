@@ -1,16 +1,14 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class CubeView : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI textMesh;
+    [SerializeField] private List<TextMeshProUGUI> CubeAmountText;
 
     public void SetText(string text)
     {
-        if (textMesh != null)
-        {
-            textMesh.text = text;
-        }
+        CubeAmountText.ForEach(x => x.text = text);
     }
 
     public void SetPosition(Vector3 position)

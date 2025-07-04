@@ -2,9 +2,10 @@ using UnityEditor.EditorTools;
 using UnityEngine;
 using Zenject;
 
-public class EntryPoint : MonoBehaviour 
+public class LevelController : MonoBehaviour 
 {
     [SerializeField] private Transform SpawnPoint;
+    [SerializeField] private CubeInteractionHandler CubeInteractionHandler;
 
     private ILevelManager _levelManager;
     private ICubeFactory _cubeFactory;
@@ -22,7 +23,12 @@ public class EntryPoint : MonoBehaviour
 
     private void Start()
     {
-        _levelManager.Init(SpawnPoint, _cubePool, _cubeFactory);
+        _levelManager.Init(SpawnPoint, _cubePool, _cubeFactory, CubeInteractionHandler);
         _levelManager.Launch();
+    }
+
+    private void FixedUpdate()
+    {
+        _levelManager.Update();
     }
 }
