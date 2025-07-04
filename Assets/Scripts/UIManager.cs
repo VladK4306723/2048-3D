@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI ScoreText;
     [SerializeField] private Button ReloadGameBTN;
     [SerializeField] private Button ExitGameBTN;
+
     private ILevelManager _levelManager;
 
     private const string HighScoreKey = "HighScore";
@@ -56,7 +57,7 @@ public class UIManager : MonoBehaviour
     }
 
     private void ExitGame()
-    { 
+    {
         Application.Quit();
     }
 }

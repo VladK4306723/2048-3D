@@ -5,7 +5,7 @@ using Zenject;
 public interface ICubePool
 {
     void Init(int poolSize, Transform parent);
-    CubeView Pull();
+    CubeView Pull(Transform parent = null);
     void Push(CubeView view);
 }
 
@@ -14,6 +14,7 @@ public class CubePool : ICubePool
     private DiContainer _container;
     private GameObject _cubePrefab;
     private Queue<CubeView> _pool = new Queue<CubeView>();
+    private Transform _parent;
 
     [Inject]
     public CubePool(DiContainer container, GameObject cubePrefab)
@@ -24,9 +25,10 @@ public class CubePool : ICubePool
 
     public void Init(int poolSize, Transform parent)
     {
+        _parent = parent;
         for (int i = 0; i < poolSize; i++)
         {
-            Create(parent);
+            Create(_parent);
         }
     }
 
@@ -36,7 +38,6 @@ public class CubePool : ICubePool
         CubeView view = cubeGO.GetComponent<CubeView>();
         if (view == null)
         {
-            Debug.LogError("Cube prefab is missing CubeView component!");
             Object.Destroy(cubeGO);
             return null;
         }
@@ -45,8 +46,12 @@ public class CubePool : ICubePool
         return view;
     }
 
-    public CubeView Pull()
+    public CubeView Pull(Transform parent = null)
     {
+        if (_pool.Count == 0)
+        {
+            Create(_parent);
+        }
         CubeView view = _pool.Dequeue();
         view.SetActive(true);
         return view;

@@ -6,6 +6,7 @@ public class CubeView : MonoBehaviour
 {
     [SerializeField] private List<TextMeshProUGUI> CubeAmountText;
     [SerializeField] private AudioSource HitSound;
+
     private Renderer _renderer;
 
     private void Awake()

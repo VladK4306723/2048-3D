@@ -5,12 +5,13 @@ using UnityEngine;
 
 public class CubeController : MonoBehaviour
 {
-    private CubeModel _model;
-    private CubeView _view;
-    public bool IsForLaunch { get; set; }
     public event Action<CubeController> OnCubeDestroyed;
     public event Action<int> OnIntChanged;
 
+    public bool IsForLaunch { get; set; }
+
+    private CubeModel _model;
+    private CubeView _view;
     private HashSet<CubeController> _interactedCubes = new();
     private ICubePool _cubePool;
 

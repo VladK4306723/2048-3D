@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 public interface ILevelManager
 {
@@ -17,6 +16,9 @@ public interface ILevelManager
 
 public class LevelManager : ILevelManager
 {
+    public event Action<int> OnScoreChanged;
+    public event Action<int> OnWinGame;
+
     private const float c_stopVelocityThreshold = 0.05f;
     private const float c_stopDelay = 0.25f;
     private int _intForWin;
@@ -25,14 +27,12 @@ public class LevelManager : ILevelManager
     private ICubePool _cubePool;
     private Transform _spawnPoint;
     private CubeInteractionHandler _cubeInteractionHandler;
-
     private CubeController _currentCube;
     private List<CubeController> _activeCubes = new();
+
     private float _stationaryTimer = 0f;
     private bool _isWaitingForStop = false;
     private int _score = 0;
-    public event Action<int> OnScoreChanged;
-    public event Action<int> OnWinGame;
 
     public void Init(Transform spawnPoint, ICubePool cubePool, ICubeFactory cubeFactory, CubeInteractionHandler cubeInteractionHandler, int intForWin)
     {
@@ -40,7 +40,7 @@ public class LevelManager : ILevelManager
         _cubeFactory = cubeFactory;
         _cubePool = cubePool;
         _cubeInteractionHandler = cubeInteractionHandler;
-        _intForWin = intForWin; 
+        _intForWin = intForWin;
 
         _cubeFactory.Init(_cubePool);
         _cubeInteractionHandler.Initialize(this);
@@ -103,13 +103,10 @@ public class LevelManager : ILevelManager
     {
         _score += newPo2Value / 4;
         OnScoreChanged?.Invoke(_score);
-        Debug.Log($"Score updated: {_score}");
 
         if (newPo2Value == _intForWin)
         {
             OnWinGame?.Invoke(_score);
-            //Reload();
-            Debug.LogError("Win condition met! Game Over!");
         }
     }
 

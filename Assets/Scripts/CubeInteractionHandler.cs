@@ -9,44 +9,27 @@ public class CubeInteractionHandler : MonoBehaviour
 
     private Rigidbody _rigidbody;
     private Camera _mainCamera;
-    private bool _isDragging = false;
     private CubeController _currentCube;
     private ILevelManager _levelManager;
+    private bool _isDragging = false;
 
     public void Initialize(ILevelManager levelManager)
     {
-        Debug.Log("CubeInteractionHandler: Initialize called");
         _mainCamera = Camera.main;
         _levelManager = levelManager;
     }
 
     public void SetCube(CubeController currentCube)
     {
-        Debug.Log("CubeInteractionHandler: SetCube called");
         _currentCube = currentCube;
         _isDragging = false;
-        if (_currentCube != null)
-        {
-            _rigidbody = _currentCube.GetComponent<Rigidbody>();
-            if (_rigidbody != null)
-            {
-                _rigidbody.isKinematic = true;
-                Debug.Log("CubeInteractionHandler: Cube set with Rigidbody");
-            }
-            else
-            {
-                Debug.LogError("CubeInteractionHandler: Rigidbody not found on the cube");
-            }
-        }
-        else
-        {
-            _rigidbody = null;
-        }
+        _rigidbody = _currentCube.GetComponent<Rigidbody>();
+        _rigidbody.isKinematic = true;
     }
 
     private void Update()
     {
-        if (_currentCube == null || _rigidbody == null || !_currentCube.IsForLaunch)
+        if (_currentCube == null || !_currentCube.IsForLaunch)
         {
             return;
         }
@@ -75,7 +58,6 @@ public class CubeInteractionHandler : MonoBehaviour
     private void OnDragStart()
     {
         _isDragging = true;
-        Debug.Log("Drag Started");
     }
 
     private void OnDrag(Vector2 screenPosition)
@@ -100,13 +82,11 @@ public class CubeInteractionHandler : MonoBehaviour
             {
                 _rigidbody.isKinematic = false;
                 _rigidbody.AddForce(Vector3.forward * 40f, ForceMode.Impulse);
-                Debug.Log("CubeInteractionHandler: Force applied to cube");
             }
 
             if (_levelManager != null)
             {
                 _levelManager.OnCubeLaunched();
-                Debug.Log("CubeInteractionHandler: OnCubeLaunched called");
             }
 
             _currentCube = null;
