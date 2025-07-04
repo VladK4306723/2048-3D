@@ -17,16 +17,20 @@ public class CubeFactory : ICubeFactory
 
     public CubeController Create(Transform spawnPoint)
     {
-        int po2Value = Random.value < 0.75 ? 2 : 4;
-
         CubeView view = _cubePool.GetCubeView();
-        view.SetPosition(spawnPoint.position);
+        int po2Value = Random.value < 0.75f ? 2 : 4;
 
         CubeModel model = new CubeModel(po2Value);
-
         GameObject cubeGO = view.gameObject;
-        CubeController controller = cubeGO.AddComponent<CubeController>();
-        controller.Initialize(model, view);
+        CubeController controller = cubeGO.GetComponent<CubeController>();
+        if (controller == null)
+        {
+            controller = cubeGO.AddComponent<CubeController>();
+        }
+        controller.Init(model, view, _cubePool);
+
+        controller.transform.position = spawnPoint.position;
+        controller.SetForLaunch(true);
 
         return controller;
     }

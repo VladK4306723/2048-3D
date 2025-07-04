@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 public interface ILevelManager
 {
@@ -7,6 +9,8 @@ public interface ILevelManager
     void Init(Transform spawnPoint, ICubePool cubePool, ICubeFactory cubeFactory, CubeInteractionHandler cubeInteractionHandler, int intForWin);
     void Update();
     void OnCubeLaunched();
+
+    event Action<int> OnScoreChanged;
 }
 
 public class LevelManager : ILevelManager
@@ -26,6 +30,7 @@ public class LevelManager : ILevelManager
     private float _stationaryTimer = 0f;
     private bool _isWaitingForStop = false;
     private int _score = 0;
+    public event Action<int> OnScoreChanged;
 
     public void Init(Transform spawnPoint, ICubePool cubePool, ICubeFactory cubeFactory, CubeInteractionHandler cubeInteractionHandler, int intForWin)
     {
@@ -56,6 +61,8 @@ public class LevelManager : ILevelManager
     private void HandleCubeDestroyed(CubeController destroyedCube)
     {
         _activeCubes.Remove(destroyedCube);
+        destroyedCube.OnCubeDestroyed -= HandleCubeDestroyed;
+        destroyedCube.OnIntChanged -= CheckWinCondition;
         if (destroyedCube == _currentCube)
         {
             _currentCube = null;
@@ -70,7 +77,7 @@ public class LevelManager : ILevelManager
         Rigidbody rb = _currentCube.GetComponent<Rigidbody>();
         if (rb == null) return;
 
-        if (rb.velocity.magnitude > c_stopVelocityThreshold)
+        if (rb.linearVelocity.magnitude > c_stopVelocityThreshold)
         {
             _stationaryTimer = 0f;
             return;
@@ -93,12 +100,38 @@ public class LevelManager : ILevelManager
 
     private void CheckWinCondition(int newPo2Value)
     {
-        _score += newPo2Value / 2;
+        _score += newPo2Value / 4;
+        OnScoreChanged?.Invoke(_score);
         Debug.Log($"Score updated: {_score}");
 
         if (newPo2Value == _intForWin)
         {
+            Reload();
             Debug.LogError("Win condition met! Game Over!");
         }
+    }
+
+    public void Reload()
+    {
+        _score = 0;
+        OnScoreChanged?.Invoke(_score);
+
+        List<CubeController> cubesToProcess = new List<CubeController>(_activeCubes);
+        foreach (var cube in cubesToProcess)
+        {
+            if (cube != null)
+            {
+                cube.OnCubeDestroyed -= HandleCubeDestroyed;
+                cube.OnIntChanged -= CheckWinCondition;
+                cube.ReturnToPool();
+            }
+        }
+        _activeCubes.Clear();
+
+        _stationaryTimer = 0f;
+        _isWaitingForStop = false;
+        _currentCube = null;
+
+        Launch();
     }
 }

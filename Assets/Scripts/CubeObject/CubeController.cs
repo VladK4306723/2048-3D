@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ public interface IInteractible
     void OnInteract(CubeController otherCube);
 }
 
-public class CubeController : MonoBehaviour
+public class CubeController : MonoBehaviour, IInteractible
 {
     private CubeModel _model;
     private CubeView _view;
@@ -15,13 +16,26 @@ public class CubeController : MonoBehaviour
     public event Action<CubeController> OnCubeDestroyed;
     public event Action<int> OnIntChanged;
 
-    private HashSet<CubeController> _interactedCubes = new HashSet<CubeController>();
+    private HashSet<CubeController> _interactedCubes = new();
+    private ICubePool _cubePool;
 
-    public void Initialize(CubeModel model, CubeView view)
+    public void Init(CubeModel model, CubeView view, ICubePool cubePool)
     {
         _model = model;
         _view = view;
+        _cubePool = cubePool;
+        IsForLaunch = false;
+        _interactedCubes.Clear();
+        transform.position = Vector3.zero;
+        transform.rotation = Quaternion.identity;
         UpdateView();
+    }
+
+    private void Clear()
+    {
+        transform.position = Vector3.zero;
+        transform.rotation = Quaternion.identity;
+        _interactedCubes.Clear();
     }
 
     public void SetForLaunch(bool value)
@@ -37,25 +51,63 @@ public class CubeController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        CubeController otherCube = collision.gameObject.GetComponent<CubeController>();
-        if (otherCube != null && !_interactedCubes.Contains(otherCube) && _model.Po2Value == otherCube._model.Po2Value)
+        CubeController other = collision.gameObject.GetComponent<CubeController>();
+        if (IsValidMerge(other, collision))
         {
-            _model.Po2Value *= 2;
-            UpdateView();
-            otherCube.DestroyCube();
-            _interactedCubes.Add(otherCube);
+            StartCoroutine(PerformMerge(other));
+        }
+        else
+        {
+            float impulseMag = collision.impulse.magnitude;
+            if (impulseMag > 1.5f)
+            {
+                TryMergeWithNearbyCubes();
+            }
         }
     }
 
-    private void OnCollisionStay(Collision collision)
+    private bool IsValidMerge(CubeController other, Collision collision)
     {
-        CubeController otherCube = collision.gameObject.GetComponent<CubeController>();
-        if (otherCube != null && !_interactedCubes.Contains(otherCube) && _model.Po2Value == otherCube._model.Po2Value)
+        if (other == null || _interactedCubes.Contains(other)) return false;
+        if (_model.Po2Value != other._model.Po2Value || other.IsForLaunch) return false;
+
+        float minImpulseThreshold = 1.5f;
+        Vector3 impulse = collision.impulse;
+        float impulseMag = impulse.magnitude;
+        if (impulseMag < minImpulseThreshold) return false;
+
+        Vector3 dirToOther = (other.transform.position - transform.position).normalized;
+        float dot = Vector3.Dot(impulse.normalized, dirToOther);
+
+        return dot > 0.5f;
+    }
+
+    private IEnumerator PerformMerge(CubeController other)
+    {
+        yield return new WaitForFixedUpdate();
+
+        if (other == null || _interactedCubes.Contains(other)) yield break;
+        if (_model.Po2Value != other._model.Po2Value || other.IsForLaunch) yield break;
+
+        _model.Po2Value *= 2;
+        UpdateView();
+        _interactedCubes.Add(other);
+        other.ReturnToPool();
+    }
+
+    private void TryMergeWithNearbyCubes()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, 0.6f);
+        foreach (Collider col in hits)
         {
-            _model.Po2Value *= 2;
-            UpdateView();
-            otherCube.DestroyCube();
-            _interactedCubes.Add(otherCube);
+            if (col.gameObject == gameObject) continue;
+
+            CubeController other = col.GetComponent<CubeController>();
+            if (other != null && !_interactedCubes.Contains(other) && _model.Po2Value == other._model.Po2Value && !other.IsForLaunch)
+            {
+                StartCoroutine(PerformMerge(other));
+                break;
+            }
         }
     }
 
@@ -65,19 +117,21 @@ public class CubeController : MonoBehaviour
         {
             _model.Po2Value *= 2;
             UpdateView();
-            otherCube.DestroyCube();
+            otherCube.ReturnToPool();
             _interactedCubes.Add(otherCube);
         }
     }
 
-    private void DestroyCube()
+    public void ReturnToPool()
     {
         OnCubeDestroyed?.Invoke(this);
-        Destroy(gameObject);
+        StartCoroutine(ReturnToPoolDelayed());
     }
 
-    private void OnDestroy()
+    private IEnumerator ReturnToPoolDelayed()
     {
-        _interactedCubes.Clear();
+        yield return new WaitForEndOfFrame();
+        Clear();
+        _cubePool.ReturnCubeView(_view);
     }
 }
