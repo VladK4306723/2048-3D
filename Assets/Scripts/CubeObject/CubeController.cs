@@ -28,6 +28,7 @@ public class CubeController : MonoBehaviour, IInteractible
         _interactedCubes.Clear();
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
+        gameObject.layer = LayerMask.NameToLayer("CubeLaunch");
         UpdateView();
     }
 

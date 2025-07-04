@@ -3,12 +3,12 @@ using UnityEditor.EditorTools;
 using UnityEngine;
 using Zenject;
 
-public class LevelController : MonoBehaviour 
+public class LevelController : MonoBehaviour
 {
+    [SerializeField] private UIManager UIManager;
     [SerializeField] private Transform SpawnPoint;
     [SerializeField] private CubeInteractionHandler CubeInteractionHandler;
     [SerializeField] private int IntForWin;
-    [SerializeField] private TextMeshProUGUI ScoreText;
 
     private ILevelManager _levelManager;
     private ICubeFactory _cubeFactory;
@@ -29,7 +29,8 @@ public class LevelController : MonoBehaviour
         _levelManager.Init(SpawnPoint, _cubePool, _cubeFactory, CubeInteractionHandler, IntForWin);
         _levelManager.Launch();
         _levelManager.OnScoreChanged += SetScore;
-        ScoreText.text = "Score: 0";
+        _levelManager.OnWinGame += OpenWinScreen;
+
     }
 
     private void FixedUpdate()
@@ -39,6 +40,11 @@ public class LevelController : MonoBehaviour
 
     private void SetScore(int score)
     {
-        ScoreText.text = new string("Score: " + score.ToString());
+        UIManager.SetScore(score);
+    }
+
+    private void OpenWinScreen(int score)
+    {
+        UIManager.OpenWinScreen(score);
     }
 }

@@ -24,6 +24,7 @@ public class CubeInteractionHandler : MonoBehaviour
     {
         Debug.Log("CubeInteractionHandler: SetCube called");
         _currentCube = currentCube;
+        _isDragging = false;
         if (_currentCube != null)
         {
             _rigidbody = _currentCube.GetComponent<Rigidbody>();
@@ -98,7 +99,7 @@ public class CubeInteractionHandler : MonoBehaviour
             if (_rigidbody != null)
             {
                 _rigidbody.isKinematic = false;
-                _rigidbody.AddForce(Vector3.forward * 30f, ForceMode.Impulse);
+                _rigidbody.AddForce(Vector3.forward * 40f, ForceMode.Impulse);
                 Debug.Log("CubeInteractionHandler: Force applied to cube");
             }
 

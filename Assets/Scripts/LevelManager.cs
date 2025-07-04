@@ -8,9 +8,11 @@ public interface ILevelManager
     void Launch();
     void Init(Transform spawnPoint, ICubePool cubePool, ICubeFactory cubeFactory, CubeInteractionHandler cubeInteractionHandler, int intForWin);
     void Update();
+    void Reload();
     void OnCubeLaunched();
 
     event Action<int> OnScoreChanged;
+    event Action<int> OnWinGame;
 }
 
 public class LevelManager : ILevelManager
@@ -31,6 +33,7 @@ public class LevelManager : ILevelManager
     private bool _isWaitingForStop = false;
     private int _score = 0;
     public event Action<int> OnScoreChanged;
+    public event Action<int> OnWinGame;
 
     public void Init(Transform spawnPoint, ICubePool cubePool, ICubeFactory cubeFactory, CubeInteractionHandler cubeInteractionHandler, int intForWin)
     {
@@ -106,7 +109,8 @@ public class LevelManager : ILevelManager
 
         if (newPo2Value == _intForWin)
         {
-            Reload();
+            OnWinGame?.Invoke(_score);
+            //Reload();
             Debug.LogError("Win condition met! Game Over!");
         }
     }
